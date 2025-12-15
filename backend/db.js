@@ -1,8 +1,10 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
+// Connection pool is a group of reusuable connections to database
+// allows caching of connections instead of reinitializing every query
 const pool = new Pool({
-    connectionString: process.env.DATABSE_URL,
+    connectionString: process.env.DATABASE_URL,
 })
 
 pool.on('connect', () => {
