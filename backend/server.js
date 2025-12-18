@@ -1,10 +1,10 @@
-const express = require('express');
-const pool = require('./db');
-require('dotenv').config();
+const express = require("express");
+const pool = require("./db");
+require("dotenv").config();
 
-const authRouter = require('./routes/auth.routes')
-const pantryRouter = require('./routes/pantry.routes')
-const recipeRouter = require('./routes/recipe.routes')
+const authRouter = require("./routes/auth.routes");
+const pantryRouter = require("./routes/pantry.routes");
+const recipeRouter = require("./routes/recipe.routes");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -12,14 +12,14 @@ const PORT = process.env.PORT || 3000;
 // parse response body into usable js
 app.use(express.json());
 
-app.use('/api', authRouter);
-app.use('/api', pantryRouter);
-app.use('/api', recipeRouter);
+app.use("/api", authRouter);
+app.use("/api", pantryRouter);
+app.use("/api", recipeRouter);
 
 app.listen(PORT, (err) => {
-    if (err) {
-        console.log(`Error starting server: ${err}`)
-    } else {
-        console.log('Server successfully started');
-    }
-})
+  if (err) {
+    console.log(`Error starting server: ${err}`);
+  } else {
+    console.log("Server successfully started");
+  }
+});
