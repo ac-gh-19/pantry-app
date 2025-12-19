@@ -1,5 +1,6 @@
 const bcrypt = require("bcrypt");
 const pool = require("../db");
+const { generateAccessToken, generateRefreshToken } = require('../utils/generateToken');
 const { isValidPassword } = require("../utils/validPassword");
 const { isValidEmail } = require("../utils/validEmail");
 
@@ -25,7 +26,7 @@ exports.signup = async (req, res) => {
       [email],
     );
     if (existingUser.rows.length > 0) {
-      return res.status(409).json({
+      return res.status(401).json({
         error: "User already exists",
       });
     }
@@ -61,8 +62,9 @@ exports.login = async (req, res) => {
       "SELECT * FROM users WHERE email = $1",
       [email],
     );
+    // no user found
     if (existingUser.rows.length === 0) {
-      return res.status(409).json({
+      return res.status(401).json({
         error: "Invalid email or password",
       });
     }
@@ -79,8 +81,13 @@ exports.login = async (req, res) => {
       });
     }
 
+    const accessToken = generateAccessToken(user.id);
+    const refreshToken = generateRefreshToken(user.id);
+
     return res.status(200).json({
       message: "Login successful",
+      accessToken: accessToken,
+      refreshToken: refreshToken,
     });
   } catch (error) {
     console.error(error);

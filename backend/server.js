@@ -1,6 +1,7 @@
 const express = require("express");
 const pool = require("./db");
 require("dotenv").config();
+const { authenticateToken } = require('./middleware/authenticate')
 
 const authRouter = require("./routes/auth.routes");
 const pantryRouter = require("./routes/pantry.routes");
@@ -13,8 +14,8 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 
 app.use("/api", authRouter);
-app.use("/api", pantryRouter);
-app.use("/api", recipeRouter);
+app.use("/api", authenticateToken, pantryRouter);
+app.use("/api", authenticateToken, recipeRouter);
 
 app.listen(PORT, (err) => {
   if (err) {
