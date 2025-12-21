@@ -1,7 +1,7 @@
 const express = require("express");
 const pool = require("./db");
 require("dotenv").config();
-const { authenticateToken } = require('./middleware/authenticate')
+const { authenticateToken } = require("./middleware/authenticate");
 
 const authRouter = require("./routes/auth.routes");
 const pantryRouter = require("./routes/pantry.routes");

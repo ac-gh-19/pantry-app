@@ -1,6 +1,11 @@
+require("dotenv").config();
 const bcrypt = require("bcrypt");
 const pool = require("../db");
-const { generateAccessToken, generateRefreshToken } = require('../utils/generateToken');
+const jwt = require("jsonwebtoken");
+const {
+  generateAccessToken,
+  generateRefreshToken,
+} = require("../utils/generateToken");
 const { isValidPassword } = require("../utils/validPassword");
 const { isValidEmail } = require("../utils/validEmail");
 
@@ -26,7 +31,7 @@ exports.signup = async (req, res) => {
       [email],
     );
     if (existingUser.rows.length > 0) {
-      return res.status(401).json({
+      return res.status(409).json({
         error: "User already exists",
       });
     }
@@ -76,13 +81,18 @@ exports.login = async (req, res) => {
     );
 
     if (!isMatchingPassword) {
-      return res.status(400).json({
+      return res.status(401).json({
         error: "Invalid password or email",
       });
     }
 
     const accessToken = generateAccessToken(user.id);
     const refreshToken = generateRefreshToken(user.id);
+
+    await pool.query(
+      "INSERT INTO refresh_tokens (user_id, token) VALUES ($1, $2)",
+      [user.id, refreshToken],
+    );
 
     return res.status(200).json({
       message: "Login successful",
@@ -94,5 +104,39 @@ exports.login = async (req, res) => {
     return res.status(500).json({
       error: "Failed to login",
     });
+  }
+};
+
+exports.refresh = async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      return res.sendStatus(401);
+    }
+
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+
+    const result = await pool.query(
+      "SELECT * FROM refresh_tokens WHERE token = $1",
+      [refreshToken],
+    );
+
+    if (result.rows.length === 0) {
+      return res.sendStatus(403);
+    }
+
+    const accessToken = generateAccessToken(decoded.userId);
+    return res.json({ accessToken: accessToken });
+  } catch (error) {
+    console.error(error);
+    if (error.name === "TokenExpiredError") {
+      await pool.query("DELETE FROM refresh_tokens WHERE token = $1", [
+        req.body.refreshToken,
+      ]);
+      return res.sendStatus(401).json({ error: 'Refresh token expired' });
+    }
+
+    return res.sendStatus(403).json({ error: 'Invalid refresh token' });
   }
 };
