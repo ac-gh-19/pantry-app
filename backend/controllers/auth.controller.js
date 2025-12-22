@@ -1,13 +1,13 @@
-require("dotenv").config();
-const bcrypt = require("bcrypt");
-const pool = require("../db");
-const jwt = require("jsonwebtoken");
+require('dotenv').config();
+const bcrypt = require('bcrypt');
+const pool = require('../db');
+const jwt = require('jsonwebtoken');
 const {
   generateAccessToken,
   generateRefreshToken,
-} = require("../utils/generateToken");
-const { isValidPassword } = require("../utils/validPassword");
-const { isValidEmail } = require("../utils/validEmail");
+} = require('../utils/generateToken');
+const { isValidPassword } = require('../utils/validPassword');
+const { isValidEmail } = require('../utils/validEmail');
 
 exports.signup = async (req, res) => {
   try {
@@ -16,39 +16,39 @@ exports.signup = async (req, res) => {
     if (!isValidPassword(password)) {
       return res.status(400).json({
         error:
-          "Password must contain atleast 8 characters, a letter and a number!",
+          'Password must contain atleast 8 characters, a letter and a number!',
       });
     }
 
     if (!isValidEmail(email)) {
       return res.status(400).json({
-        error: "Invalid email",
+        error: 'Invalid email',
       });
     }
 
     const existingUser = await pool.query(
-      "SELECT * FROM users WHERE email = $1",
+      'SELECT * FROM users WHERE email = $1',
       [email],
     );
     if (existingUser.rows.length > 0) {
       return res.status(409).json({
-        error: "User already exists",
+        error: 'User already exists',
       });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const result = await pool.query(
-      "INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id, email, created_at",
+      'INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id, email, created_at',
       [email, hashedPassword],
     );
     return res.status(201).json({
-      message: "User successfully created",
+      message: 'User successfully created',
       user: result.rows[0],
     });
   } catch (error) {
     console.error(error);
     return res.status(500).json({
-      error: "Failed to create user",
+      error: 'Failed to create user',
     });
   }
 };
@@ -59,18 +59,18 @@ exports.login = async (req, res) => {
 
     if (!email || !password) {
       return res.status(400).json({
-        error: "Email and password are required",
+        error: 'Email and password are required',
       });
     }
 
     const existingUser = await pool.query(
-      "SELECT * FROM users WHERE email = $1",
+      'SELECT * FROM users WHERE email = $1',
       [email],
     );
-    // no user found
+
     if (existingUser.rows.length === 0) {
       return res.status(401).json({
-        error: "Invalid email or password",
+        error: 'Invalid email or password',
       });
     }
 
@@ -82,7 +82,7 @@ exports.login = async (req, res) => {
 
     if (!isMatchingPassword) {
       return res.status(401).json({
-        error: "Invalid password or email",
+        error: 'Invalid password or email',
       });
     }
 
@@ -90,19 +90,19 @@ exports.login = async (req, res) => {
     const refreshToken = generateRefreshToken(user.id);
 
     await pool.query(
-      "INSERT INTO refresh_tokens (user_id, token) VALUES ($1, $2)",
+      'INSERT INTO refresh_tokens (user_id, token) VALUES ($1, $2)',
       [user.id, refreshToken],
     );
 
     return res.status(200).json({
-      message: "Login successful",
+      message: 'Login successful',
       accessToken: accessToken,
       refreshToken: refreshToken,
     });
   } catch (error) {
     console.error(error);
     return res.status(500).json({
-      error: "Failed to login",
+      error: 'Failed to login',
     });
   }
 };
@@ -112,26 +112,30 @@ exports.refresh = async (req, res) => {
     const { refreshToken } = req.body;
 
     if (!refreshToken) {
-      return res.sendStatus(401);
+      return res.sendStatus(400).json({
+        error: 'Refresh token required'
+      })
     }
 
     const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
 
     const result = await pool.query(
-      "SELECT * FROM refresh_tokens WHERE token = $1",
+      'SELECT * FROM refresh_tokens WHERE token = $1',
       [refreshToken],
     );
 
     if (result.rows.length === 0) {
-      return res.sendStatus(403);
+      return res.sendStatus(403).json({
+        error: 'Invalid refresh token'
+      })
     }
 
     const accessToken = generateAccessToken(decoded.userId);
     return res.json({ accessToken: accessToken });
   } catch (error) {
     console.error(error);
-    if (error.name === "TokenExpiredError") {
-      await pool.query("DELETE FROM refresh_tokens WHERE token = $1", [
+    if (error.name === 'TokenExpiredError') {
+      await pool.query('DELETE FROM refresh_tokens WHERE token = $1', [
         req.body.refreshToken,
       ]);
       return res.sendStatus(401).json({ error: 'Refresh token expired' });
@@ -140,3 +144,30 @@ exports.refresh = async (req, res) => {
     return res.sendStatus(403).json({ error: 'Invalid refresh token' });
   }
 };
+
+exports.logout = async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      return res.sendStatus(400).json({
+        error: 'Refresh token required'
+      })
+    }
+
+    const result = await pool.query(
+      'DELETE FROM refresh_tokens WHERE token = $1 RETURNING *', [refreshToken]
+    );
+
+    if (result.rows.length === 0) {
+      return res.sendStatus(404).json({ error: 'Token not found' });
+    }
+
+    return res.json({ message: 'Successfully logged out' });
+
+
+  } catch (error) {
+    console.error(error);
+    return res.sendStatus(500).json({ error: 'Logout failed' });
+  }
+}
