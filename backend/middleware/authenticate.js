@@ -13,6 +13,6 @@ exports.authenticateToken = (req, res, next) => {
     next();
   } catch (error) {
     console.error(error);
-    return res.sendStatus(403);
+    return res.sendStatus(403).json({ error: "Invalid token" });
   }
 };
