@@ -1,6 +1,6 @@
 const pool = require("../db");
 
-// User object is passed in through req from authentication step
+// req.user object is passed in from authentication step
 
 exports.getAllItems = async (req, res) => {
   try {
