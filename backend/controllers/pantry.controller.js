@@ -11,7 +11,7 @@ exports.getAllItems = async (req, res) => {
     );
     return res.json(result.rows);
   } catch (error) {
-    console.error(err);
+    console.error(error);
     return res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -42,8 +42,9 @@ exports.addItem = async (req, res) => {
 exports.updateItem = async (req, res) => {
   try {
     const { user } = req;
-    const { itemId } = req.params;
+    const { itemId } = Number(req.params.itemId);
     const { name, quantity, unit } = req.body;
+
 
     if (!Number.isInteger(itemId) || itemId <= 0)
       return res.status(400).json({ error: "Invalid item id" });

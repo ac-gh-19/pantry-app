@@ -44,7 +44,7 @@ exports.getAllRecipes = async (req, res) => {
     );
     return res.json(result.rows);
   } catch (error) {
-    console.error(err);
+    console.error(error);
     return res.status(500).json({ error: "Internal server error" });
   }
 };
