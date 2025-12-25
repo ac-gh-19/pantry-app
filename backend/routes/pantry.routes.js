@@ -9,7 +9,7 @@ const {
 
 pantryRouter.get("/pantry", getAllItems);
 pantryRouter.post("/pantry", addItem);
-pantryRouter.put("/pantry/:id", updateItem);
-pantryRouter.delete("/pantry/:id", deleteItem);
+pantryRouter.put("/pantry/:itemId", updateItem);
+pantryRouter.delete("/pantry/:itemId", deleteItem);
 
 module.exports = pantryRouter;
