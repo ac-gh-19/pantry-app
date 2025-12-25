@@ -10,7 +10,6 @@ const MAX_PANTRY = 30;
 
 // req.user object is passed in through authenticateToken middlware
 
-
 exports.deleteRecipe = async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -27,14 +26,27 @@ exports.deleteRecipe = async (req, res) => {
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Recipe not found" });
     }
-    return res.json({message: 'Recipe deleted successfully', recipe: result.rows[0]});
+    return res.json({
+      message: "Recipe deleted successfully",
+      recipe: result.rows[0],
+    });
   } catch (error) {
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 
-exports.getAllRecipes = (req, res) => {
-  res.json({ message: "get recipes" });
+exports.getAllRecipes = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const result = await pool.query(
+      "SELECT * FROM saved_recipes WHERE user_id = $1",
+      [userId],
+    );
+    return res.json(result.rows);
+  } catch (error) {
+    console.error(err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
 };
 
 exports.addRecipe = async (req, res) => {
@@ -52,8 +64,7 @@ exports.addRecipe = async (req, res) => {
       !recipe.difficulty
     ) {
       return res.status(400).json({
-        error:
-          `Invalid recipe data. Must include title,
+        error: `Invalid recipe data. Must include title,
           cooking_time, difficulty, and arrays
           (atleast length 1) of ingredients_used and instructions.
           (Optional - optional_additions)`,
@@ -180,7 +191,7 @@ exports.generateRecipes = async (req, res) => {
       recipes = JSON.parse(rawResJSON);
     } catch (error) {
       return res.status(502).json({
-        error: 'Error parsing response'
+        error: "Error parsing response",
       });
     }
 
