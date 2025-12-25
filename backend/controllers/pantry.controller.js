@@ -24,7 +24,7 @@ exports.addItem = async (req, res) => {
       'INSERT INTO pantry_items (name, quantity, unit, user_id) VALUES ($1, $2, $3, $4) RETURNING *',
       [name, quantity, unit, user.userId],
     );
-    return res.status(201).json(result.rows[0]);
+    return res.status(201).json({ message: 'Item added successfully', item: result.rows[0]});
   } catch (error) {
     return res.status(500).json({ error: 'Internal server error' });
   }
@@ -42,7 +42,7 @@ exports.updateItem = async (req, res) => {
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Item not found' });
     }
-    return res.json(result.rows[0]);
+    return res.json({ message: 'Item updated successfully', item: result.rows[0]});
   } catch (error) {
     return res.status(500).json({ error: 'Internal server error' });
   }
@@ -59,7 +59,7 @@ exports.deleteItem = async (req, res) => {
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Item not found' });
     }
-    return res.json(result.rows[0]);
+    return res.json({ message: 'Item deleted successfully', item: result.rows[0]});
   } catch (error) {
     return res.status(500).json({ error: 'Internal server error' });
   }
