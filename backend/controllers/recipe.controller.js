@@ -2,7 +2,8 @@ const pool = require("../db");
 const {
   generateRecipesFromIngredients,
 } = require("../services/claude.service");
-
+const { ok, fail } = require("../utils/response");
+const ERROR = require("../utils/errors");
 const MIN_SELECTED = 5;
 const MAX_SELECTED = 15;
 const MIN_PANTRY = 5;
@@ -16,7 +17,7 @@ exports.deleteRecipe = async (req, res) => {
     const recipeId = Number(req.params.recipeId);
 
     if (!Number.isInteger(recipeId) || recipeId <= 0) {
-      return res.status(400).json({ error: "Invalid recipe id" });
+      return fail(res, ERROR.VALIDATION_ERROR, "Invalid recipeId", 400);
     }
 
     const result = await pool.query(
@@ -24,14 +25,13 @@ exports.deleteRecipe = async (req, res) => {
       [recipeId, userId],
     );
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Recipe not found" });
+      return fail(res, ERROR.RESOURCE_NOT_FOUND, "Recipe not found", 404);
     }
-    return res.json({
-      message: "Recipe deleted successfully",
-      recipe: result.rows[0],
-    });
+
+    return ok(res, result.rows[0], 200);
   } catch (error) {
-    return res.status(500).json({ error: "Internal server error" });
+    console.error("Delete recipe fail: ", error);
+    return fail(res, ERROR.INTERNAL_ERROR, "Internal server error", 500);
   }
 };
 
@@ -42,10 +42,11 @@ exports.getAllRecipes = async (req, res) => {
       "SELECT * FROM saved_recipes WHERE user_id = $1",
       [userId],
     );
-    return res.json(result.rows);
+
+    return ok(res, result.rows[0], 200);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: "Internal server error" });
+    console.error("Get all recipes fail: ", error);
+    return fail(res, ERROR.INTERNAL_ERROR, "Internal server error", 500);
   }
 };
 
@@ -54,20 +55,58 @@ exports.addRecipe = async (req, res) => {
     const recipe = req.body;
     const userId = req.user.userId;
 
+    if (!recipe.title || typeof recipe.title !== "string") {
+      return fail(res, ERROR.VALIDATION_ERROR, "Invalid title", 400, {
+        field: "title",
+      });
+    }
+
+    if (!Array.isArray(recipe.ingredients_used)) {
+      return fail(
+        res,
+        ERROR.VALIDATION_ERROR,
+        "Invalid ingredients_used",
+        400,
+        { field: "ingredients_used" },
+      );
+    }
+
+    if (recipe.ingredients_used.length === 0) {
+      return fail(
+        res,
+        ERROR.VALIDATION_ERROR,
+        "Invalid ingredients_used",
+        400,
+        { field: "ingredients_used", minLength: 1 },
+      );
+    }
+
+    if (!Array.isArray(recipe.instructions)) {
+      return fail(res, ERROR.VALIDATION_ERROR, "Invalid instructions", 400, {
+        field: "instructions",
+      });
+    }
+
+    if (recipe.instructions.length === 0) {
+      return fail(res, ERROR.VALIDATION_ERROR, "Invalid instructions", 400, {
+        field: "instructions",
+        minLength: 1,
+      });
+    }
+
     if (
-      !recipe.title ||
-      !Array.isArray(recipe.ingredients_used) ||
-      recipe.ingredients_used.length === 0 ||
-      !Array.isArray(recipe.instructions) ||
-      recipe.instructions.length === 0 ||
-      !recipe.cooking_time ||
-      !recipe.difficulty
+      recipe.cooking_time === undefined ||
+      typeof recipe.cooking_time !== "number" ||
+      recipe.cooking_time <= 0
     ) {
-      return res.status(400).json({
-        error: `Invalid recipe data. Must include title,
-          cooking_time, difficulty, and arrays
-          (atleast length 1) of ingredients_used and instructions.
-          (Optional - optional_additions)`,
+      return fail(res, ERROR.VALIDATION_ERROR, "Invalid cooking_time", 400, {
+        field: "cooking_time",
+      });
+    }
+
+    if (!recipe.difficulty || typeof recipe.difficulty !== "string") {
+      return fail(res, ERROR.VALIDATION_ERROR, "Invalid difficulty", 400, {
+        field: "difficulty",
       });
     }
 
@@ -98,18 +137,10 @@ exports.addRecipe = async (req, res) => {
       ],
     );
 
-    if (result.rows.length === 0) {
-      return res
-        .status(400)
-        .json({ error: "Recipe could not be added successfully" });
-    }
-
-    return res
-      .status(201)
-      .json({ message: "Recipe added successfully", recipe: result.rows[0] });
+    return ok(res, result.rows[0], 201);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal server error" });
+    console.error("Add recipe fail: ", error);
+    return fail(res, ERROR.INTERNAL_ERROR, "Internal server error", 500);
   }
 };
 
@@ -197,7 +228,7 @@ exports.generateRecipes = async (req, res) => {
 
     return res.json({ recipes });
   } catch (error) {
-    console.error(error);
+    console.error("Generate recipe fail: ", error);
     return res.status(500).json({
       error: "Internal server error",
     });
