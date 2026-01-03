@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import App from "../App";
+import RequireAuth from "../auth/RequireAuth";
 
 import Login from "../pages/Login";
 import Signup from "../pages/Signup";
@@ -14,19 +15,33 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Navigate to="/pantry" replace />,
+        element: (
+            <Navigate to="/pantry" replace />
+        ),
       },
       {
         path: "pantry",
-        element: <Pantry></Pantry>,
+        element: (
+          <RequireAuth>
+            <Pantry></Pantry>
+          </RequireAuth>
+        ),
       },
       {
         path: "recipes/generate",
-        element: <Generator></Generator>,
+        element: (
+          <RequireAuth>
+            <Generator></Generator>
+          </RequireAuth>
+        ),
       },
       {
         path: "recipes",
-        element: <Recipes></Recipes>,
+        element: (
+          <RequireAuth>
+            <Recipes></Recipes>
+          </RequireAuth>
+        ),
       },
     ],
   },

@@ -18,12 +18,11 @@ app.use(
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-  })
+  }),
 );
 
 // Handle preflight for all routes
 app.options(/.*/, cors());
-
 
 // parse response body into usable js
 app.use(express.json());

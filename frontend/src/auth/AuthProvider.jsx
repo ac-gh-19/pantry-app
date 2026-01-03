@@ -28,7 +28,7 @@ export function AuthProvider({ children }) {
       method: "POST",
       body: { email, password },
     });
-    
+
     return res;
   }
 
@@ -73,11 +73,8 @@ export function AuthProvider({ children }) {
       refresh,
       logout,
     }),
-    [accessToken, user]
+    [accessToken, user],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
-
-
-
