@@ -10,6 +10,21 @@ const recipeRouter = require("./routes/recipe.routes");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const cors = require("cors");
+
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
+// Handle preflight for all routes
+app.options(/.*/, cors());
+
+
 // parse response body into usable js
 app.use(express.json());
 
