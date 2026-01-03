@@ -1,6 +1,7 @@
 // src/auth/AuthContext.jsx
 import { useMemo, useState } from "react";
-import { apiFetch } from "../api/client";
+import { apiFetch } from "./client";
+import { AuthContext } from "./AuthContext";
 
 export function AuthProvider({ children }) {
   const [accessToken, setAccessToken] = useState(null);
