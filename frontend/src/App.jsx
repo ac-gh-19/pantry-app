@@ -1,5 +1,3 @@
-import Signup from "./pages/Signup";
-import Login from "./pages/Login";
 import Pantry from "./pages/Pantry";
 import Generator from "./pages/Generator";
 import Recipes from "./pages/Recipes";

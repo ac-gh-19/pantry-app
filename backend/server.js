@@ -27,7 +27,7 @@ app.options(/.*/, cors());
 // parse response body into usable js
 app.use(express.json());
 
-app.use("/api", authRouter);
+app.use("/auth", authRouter);
 app.use("/api", authenticateToken, pantryRouter);
 app.use("/api", authenticateToken, recipeRouter);
 

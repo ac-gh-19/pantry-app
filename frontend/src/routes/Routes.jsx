@@ -2,8 +2,7 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 import App from "../App";
 import RequireAuth from "../auth/RequireAuth";
 
-import Login from "../pages/Login";
-import Signup from "../pages/Signup";
+import AuthPage from "../pages/AuthPage";
 import Pantry from "../pages/Pantry";
 import Generator from "../pages/Generator";
 import Recipes from "../pages/Recipes";
@@ -15,9 +14,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: (
-            <Navigate to="/pantry" replace />
-        ),
+        element: <Navigate to="/auth" replace />,
       },
       {
         path: "pantry",
@@ -47,12 +44,8 @@ const router = createBrowserRouter([
   },
 
   {
-    path: "/login",
-    element: <Login></Login>,
-  },
-  {
-    path: "/signup",
-    element: <Signup></Signup>,
+    path: "/auth",
+    element: <AuthPage></AuthPage>,
   },
 ]);
 
