@@ -5,6 +5,7 @@ import AuthFormButton from "../components/AuthPage/AuthFormButton";
 import AuthFormInput from "../components/AuthPage/AuthFormInput";
 import AuthFormResult from "../components/AuthPage/AuthFormResult";
 import { isValidPassword } from "../utils/validPassword";
+import { ChefHatIcon } from "lucide-react";
 
 export default function AuthPage() {
   const [mode, setMode] = useState("login");
@@ -56,8 +57,8 @@ export default function AuthPage() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-emerald-50 to-white px-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
         <div className="flex justify-center mb-4">
-          <div className="h-14 w-14 rounded-xl bg-emerald-500 flex items-center justify-center shadow-md">
-            <span className="text-2xl">🍳</span>
+          <div className="h-14 w-14 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 flex items-center justify-center shadow-md">
+            <ChefHatIcon stroke="white" size={32}></ChefHatIcon>
           </div>
         </div>
         <h1 className="text-3xl font-bold text-center text-slate-900">
@@ -131,8 +132,8 @@ export default function AuthPage() {
           <button
             type="submit"
             disabled={loading || (!isLogin && !validPassword)}
-            className="w-full py-3 rounded-xl bg-emerald-500 text-white font-semibold
-              hover:bg-emerald-600 transition disabled:opacity-60"
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 transition text-white font-semibold
+              hover:bg-emerald-600 disabled:opacity-60"
           >
             {loading ? "Loading..." : isLogin ? "Sign In" : "Create Account"}
           </button>
