@@ -14,11 +14,7 @@ export async function apiFetch(path, options = {}) {
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 
-  console.log("RES", res);
-
   const json = await res.json();
-
-  console.log("DATA", json);
 
   if (!res.ok) {
     const err = new Error(json?.error?.message || "Request failed");

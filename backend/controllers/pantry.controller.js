@@ -44,7 +44,7 @@ exports.addItem = async (req, res) => {
 exports.updateItem = async (req, res) => {
   try {
     const { user } = req;
-    const { itemId } = Number(req.params.itemId);
+    const itemId = Number(req.params.itemId);
     const { name, quantity, unit } = req.body;
 
     if (!Number.isInteger(itemId) || itemId <= 0)
@@ -73,7 +73,7 @@ exports.updateItem = async (req, res) => {
 exports.deleteItem = async (req, res) => {
   try {
     const { user } = req;
-    const { itemId } = Number(req.params.itemId);
+    const itemId = Number(req.params.itemId);
 
     if (!Number.isInteger(itemId) || itemId <= 0)
       return fail(res, ERROR.VALIDATION_ERROR, "Invalid itemId", 400);
@@ -82,6 +82,7 @@ exports.deleteItem = async (req, res) => {
       "DELETE FROM pantry_items WHERE id = $1 AND user_id = $2 RETURNING *",
       [itemId, user.userId],
     );
+
     if (result.rows.length === 0) {
       return fail(res, ERROR.RESOURCE_NOT_FOUND, "Item not found", 404);
     }

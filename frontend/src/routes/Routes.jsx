@@ -1,6 +1,6 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import App from "../App";
-import RequireAuth from "../auth/RequireAuth";
+import RequireAuth from "../provider/auth/RequireAuth";
 
 import AuthPage from "../pages/AuthPage";
 import Pantry from "../pages/Pantry";

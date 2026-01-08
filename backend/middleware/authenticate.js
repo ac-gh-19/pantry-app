@@ -6,7 +6,8 @@ exports.authenticateToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
   const token = authHeader?.split(" ")[1];
 
-  if (!token) return fail(res, ERROR.VALIDATION_ERROR, "Invalid token", 401);
+  if (!token)
+    return fail(res, ERROR.AUTH_INVALID_CREDENTIALS, "Missing token", 401);
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
@@ -14,6 +15,9 @@ exports.authenticateToken = (req, res, next) => {
     next();
   } catch (error) {
     console.error("Authentication error: ", error);
-    return fail(ERROR.AUTH_INVALID_CREDENTIALS, "Invalid token", 403);
+    if (error.name === "TokenExpiredError") {
+      return fail(res, ERROR.AUTH_INVALID_CREDENTIALS, "Token expired", 401);
+    }
+    return fail(res, ERROR.AUTH_INVALID_CREDENTIALS, "Invalid token", 401);
   }
 };

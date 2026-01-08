@@ -1,6 +1,6 @@
 // src/auth/AuthContext.jsx
-import { useMemo, useState } from "react";
-import { apiFetch } from "./client";
+import { useState } from "react";
+import { apiFetch } from "../../utils/client";
 import { AuthContext } from "./AuthContext";
 
 export function AuthProvider({ children }) {
@@ -64,18 +64,33 @@ export function AuthProvider({ children }) {
     setUser(null);
   }
 
-  const value = useMemo(
-    () => ({
-      accessToken,
-      user,
-      setUser,
-      login,
-      signup,
-      refresh,
-      logout,
-    }),
-    [accessToken, user],
-  );
+  // wrapper to call api without token and auto retry refresh token
+  async function authFetch(path, options = {}) {
+    try {
+      return await apiFetch(path, { ...options, token: accessToken });
+    } catch {
+      try {
+        const newToken = await refresh();
+        return await apiFetch(path, { ...options, token: newToken });
+      } catch (refreshErr) {
+        if (refreshErr.status === 401) {
+          await logout();
+        }
+        throw refreshErr;
+      }
+    }
+  }
+
+  const value = {
+    accessToken,
+    user,
+    setUser,
+    login,
+    signup,
+    refresh,
+    logout,
+    authFetch,
+  };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

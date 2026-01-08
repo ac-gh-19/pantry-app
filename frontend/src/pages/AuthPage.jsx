@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../auth/AuthContext";
+import { useAuth } from "../provider/auth/AuthContext";
 import AuthFormButton from "../components/AuthPage/AuthFormButton";
 import AuthFormInput from "../components/AuthPage/AuthFormInput";
 import AuthFormResult from "../components/AuthPage/AuthFormResult";

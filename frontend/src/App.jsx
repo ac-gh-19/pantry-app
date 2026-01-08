@@ -6,16 +6,16 @@ import { Sparkles } from "lucide-react";
 import { Menu } from "lucide-react";
 import { LogOut } from "lucide-react";
 import { useState } from "react";
-import { useAuth } from "./auth/AuthContext";
+import { useAuth } from "./provider/auth/AuthContext";
 
 export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const { logout } = useAuth();
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-white">
+    <div className="min-h-screen bg-gradient-to-br bg-slate-100">
       <div className="flex mx-auto h-screen">
-        <aside className="flex flex-col rounded-2xl bg-white shadow-xl">
+        <aside className="flex flex-col bg-white shadow-xl">
           <div className="flex justify-center items-center px-4 py-6 border-b border-slate-300 gap-3">
             {sidebarOpen && (
               <>
@@ -66,7 +66,7 @@ export default function App() {
           </div>
         </aside>
 
-        <main className="bg-amber-300 w-full">
+        <main className="w-full overflow-scroll">
           <Outlet></Outlet>
         </main>
       </div>

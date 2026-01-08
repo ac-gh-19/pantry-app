@@ -6,7 +6,7 @@ export default function SidebarLink({ children, to, Icon, sidebarOpen }) {
       to={to}
       end
       className={({ isActive }) =>
-        `flex items-center gap-3 px-4 py-3 rounded-xl transition ${
+        `flex items-center gap-3 px-4 py-3 rounded-xl transition hover:scale-95 ${
           isActive
             ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md"
             : "text-gray-600 hover:bg-slate-100"
