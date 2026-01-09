@@ -112,9 +112,9 @@ exports.addRecipe = async (req, res) => {
 
     const allowedDifficulties = ["easy", "medium", "hard"];
     if (!allowedDifficulties.includes(recipe.difficulty.toLowerCase())) {
-      return res
-        .status(400)
-        .json({ error: "Difficulty must be easy, medium, or difficult" });
+      return fail(res, ERROR.VALIDATION_ERROR, "Difficulty must be easy, medium, or difficult", 400, {
+          field: "difficulty",
+        });
     }
 
     const optionalAdditions = Array.isArray(recipe.optional_additions)
@@ -159,15 +159,21 @@ exports.generateRecipes = async (req, res) => {
 
     if (isSelectionMode) {
       if (selectedItemIds.length < MIN_SELECTED) {
-        return res
-          .status(400)
-          .json({ error: `Select at least ${MIN_SELECTED} items` });
+        return fail(
+          res,
+          VALIDATION_ERROR,
+          `Select at least ${MIN_SELECTED} items`,
+          400
+        );
       }
 
       if (selectedItemIds.length > MAX_SELECTED) {
-        return res
-          .status(400)
-          .json({ error: `Select at most ${MAX_SELECTED} items` });
+        return fail(
+          res,
+          VALIDATION_ERROR,
+          `Select at most ${MAX_SELECTED} items`,
+          400
+        );
       }
 
       // postgresql strongly typed - ::int[] makes sure $2 reads as array of int
@@ -177,7 +183,12 @@ exports.generateRecipes = async (req, res) => {
       );
 
       if (pantryItems.rows.length === 0) {
-        return res.status(400).json({ error: "Selected items not found" });
+        return fail(
+          res,
+          RESOURCE_NOT_FOUND,
+          "Selected items not found",
+          404
+        );
       }
     } else {
       pantryItems = await pool.query(
@@ -186,13 +197,21 @@ exports.generateRecipes = async (req, res) => {
       );
 
       if (pantryItems.rows.length === 0) {
-        return res.status(400).json({ error: "Pantry is empty" });
+        return fail(
+          res,
+          VALIDATION_ERROR,
+          "Pantry is empty",
+          400
+        );
       }
 
       if (pantryItems.rows.length < MIN_PANTRY) {
-        return res
-          .status(400)
-          .json({ error: `Pantry must have at least ${MIN_PANTRY} items` });
+        return fail(
+          res,
+          VALIDATION_ERROR,
+          `Pantry must have at least ${MIN_PANTRY} items`,
+          400
+        );
       }
     }
 
@@ -206,9 +225,12 @@ exports.generateRecipes = async (req, res) => {
     const minUnique = isSelectionMode ? MIN_SELECTED : MIN_PANTRY;
 
     if (ingredientNames.length < minUnique) {
-      return res
-        .status(400)
-        .json({ error: `There must be at least ${minUnique} unique items` });
+      return fail(
+        res,
+        VALIDATION_ERROR,
+        `There must be at least ${minUnique} unique items`,
+        400
+      );
     }
 
     if (ingredientNames.length > MAX_PANTRY) {
@@ -221,16 +243,22 @@ exports.generateRecipes = async (req, res) => {
     try {
       recipes = JSON.parse(rawResJSON);
     } catch (error) {
-      return res.status(502).json({
-        error: "Error parsing response",
-      });
+      return fail(
+        res,
+        INTERNAL_ERROR,
+        "Error parsing response from recipe generator",
+        502
+      );
     }
 
-    return res.json({ recipes });
+    return ok(res, { recipes });
   } catch (error) {
     console.error("Generate recipe fail: ", error);
-    return res.status(500).json({
-      error: "Internal server error",
-    });
+    return fail(
+      res,
+      INTERNAL_ERROR,
+      "Internal server error",
+      500
+    );
   }
 };
