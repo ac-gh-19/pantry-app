@@ -21,8 +21,6 @@ export default function Pantry() {
   const [loading, setLoading] = useState(false);
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
-  console.log("rerendering");
-
   const { getAllItems, addItem, deleteItem, pantry, setPantry } = usePantry();
 
   const isFormFilled = form.name && form.quantity && form.unit;
@@ -36,7 +34,6 @@ export default function Pantry() {
     async function getPantry() {
       const res = await getAllItems();
       setPantry(res.data);
-      console.log(res.data);
       return res;
     }
 
@@ -69,7 +66,6 @@ export default function Pantry() {
   }
 
   async function handleDeleteItem(itemId) {
-    console.log("Deleting", itemId);
     try {
       await deleteItem(itemId);
       setPantry((prev) => prev.filter((item) => item.id != itemId));

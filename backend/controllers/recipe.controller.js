@@ -6,7 +6,7 @@ const { ok, fail } = require("../utils/response");
 const ERROR = require("../utils/errors");
 const MIN_SELECTED = 5;
 const MAX_SELECTED = 15;
-const MIN_PANTRY = 5;
+const MIN_PANTRY = 10;
 const MAX_PANTRY = 30;
 
 // req.user object is passed in through authenticateToken middlware
@@ -112,9 +112,15 @@ exports.addRecipe = async (req, res) => {
 
     const allowedDifficulties = ["easy", "medium", "hard"];
     if (!allowedDifficulties.includes(recipe.difficulty.toLowerCase())) {
-      return fail(res, ERROR.VALIDATION_ERROR, "Difficulty must be easy, medium, or difficult", 400, {
+      return fail(
+        res,
+        ERROR.VALIDATION_ERROR,
+        "Difficulty must be easy, medium, or difficult",
+        400,
+        {
           field: "difficulty",
-        });
+        },
+      );
     }
 
     const optionalAdditions = Array.isArray(recipe.optional_additions)
@@ -154,25 +160,27 @@ exports.generateRecipes = async (req, res) => {
           .filter((id) => Number.isInteger(id) && id > 0)
       : null;
 
+    const { mode } = req.body;
+
     let pantryItems = [];
-    const isSelectionMode = selectedItemIds && selectedItemIds.length > 0;
+    const isSelectionMode = mode === "select";
 
     if (isSelectionMode) {
       if (selectedItemIds.length < MIN_SELECTED) {
         return fail(
           res,
-          VALIDATION_ERROR,
+          ERROR.VALIDATION_ERROR,
           `Select at least ${MIN_SELECTED} items`,
-          400
+          400,
         );
       }
 
       if (selectedItemIds.length > MAX_SELECTED) {
         return fail(
           res,
-          VALIDATION_ERROR,
+          ERROR.VALIDATION_ERROR,
           `Select at most ${MAX_SELECTED} items`,
-          400
+          400,
         );
       }
 
@@ -185,9 +193,9 @@ exports.generateRecipes = async (req, res) => {
       if (pantryItems.rows.length === 0) {
         return fail(
           res,
-          RESOURCE_NOT_FOUND,
+          ERROR.RESOURCE_NOT_FOUND,
           "Selected items not found",
-          404
+          404,
         );
       }
     } else {
@@ -197,20 +205,15 @@ exports.generateRecipes = async (req, res) => {
       );
 
       if (pantryItems.rows.length === 0) {
-        return fail(
-          res,
-          VALIDATION_ERROR,
-          "Pantry is empty",
-          400
-        );
+        return fail(res, ERROR.VALIDATION_ERROR, "Pantry is empty", 400);
       }
 
       if (pantryItems.rows.length < MIN_PANTRY) {
         return fail(
           res,
-          VALIDATION_ERROR,
-          `Pantry must have at least ${MIN_PANTRY} items`,
-          400
+          ERROR.VALIDATION_ERROR,
+          `Pantry must have at least ${MIN_PANTRY} items to generate from`,
+          400,
         );
       }
     }
@@ -227,9 +230,9 @@ exports.generateRecipes = async (req, res) => {
     if (ingredientNames.length < minUnique) {
       return fail(
         res,
-        VALIDATION_ERROR,
+        ERROR.VALIDATION_ERROR,
         `There must be at least ${minUnique} unique items`,
-        400
+        400,
       );
     }
 
@@ -245,20 +248,15 @@ exports.generateRecipes = async (req, res) => {
     } catch (error) {
       return fail(
         res,
-        INTERNAL_ERROR,
+        ERROR.INTERNAL_ERROR,
         "Error parsing response from recipe generator",
-        502
+        502,
       );
     }
 
-    return ok(res, { recipes });
+    return ok(res, recipes, 200);
   } catch (error) {
     console.error("Generate recipe fail: ", error);
-    return fail(
-      res,
-      INTERNAL_ERROR,
-      "Internal server error",
-      500
-    );
+    return fail(res, ERROR.INTERNAL_ERROR, "Internal server error", 500);
   }
 };

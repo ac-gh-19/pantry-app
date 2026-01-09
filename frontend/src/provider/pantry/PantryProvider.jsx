@@ -8,7 +8,6 @@ export function PantryProvider({ children }) {
 
   async function getAllItems() {
     const res = await authFetch("/api/pantry");
-    console.log(res);
     return res;
   }
 

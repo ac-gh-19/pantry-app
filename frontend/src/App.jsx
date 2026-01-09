@@ -14,8 +14,6 @@ export default function App() {
   const [userTouchedSidebar, setUserTouchedSidebar] = useState(false);
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
-  console.log("is it a desktop", isDesktop);
-
   if (!isDesktop && sidebarOpen) {
     setSidebarOpen(false);
     setUserTouchedSidebar(false);
