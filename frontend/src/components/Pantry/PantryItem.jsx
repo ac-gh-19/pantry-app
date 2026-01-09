@@ -1,11 +1,13 @@
 import { Package, Trash2 } from "lucide-react";
 import { Pen } from "lucide-react";
 
-export default function PantryItem({ item, onDelete }) {
+export default function PantryItem({ item, onDelete, isDesktop }) {
   const displayName = item.name.charAt(0).toUpperCase() + item.name.slice(1);
 
   return (
-    <div className="p-5 bg-white shadow-sm flex rounded-xl gap-3 items-center flex-wrap">
+    <div
+      className={`${isDesktop ? "p-5" : "p-3"} bg-white shadow-sm flex rounded-xl gap-3 items-center flex-wrap`}
+    >
       <div className="p-3 bg-emerald-200 rounded-xl">
         <Package stroke="green"></Package>
       </div>

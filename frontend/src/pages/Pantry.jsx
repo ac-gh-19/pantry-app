@@ -7,6 +7,7 @@ import PantryButton from "../components/Pantry/PantryButton";
 import PantryItem from "../components/Pantry/PantryItem";
 import ErrorBox from "../components/errorBox";
 import { X } from "lucide-react";
+import { useMediaQuery } from "../hooks/useMediaQuery";
 
 export default function Pantry() {
   const [pantry, setPantry] = useState(null);
@@ -18,6 +19,9 @@ export default function Pantry() {
   const [addingItem, setAddingItem] = useState(false);
   const [addItemError, setAddItemError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const isDesktop = useMediaQuery("(min-width: 768px)");
+
+  console.log(isDesktop);
 
   const { getAllItems, addItem, deleteItem } = usePantry();
 
@@ -76,14 +80,18 @@ export default function Pantry() {
   }
 
   return (
-    <div className="h-screen p-8 bg-slate-100">
+    <div className={`h-screen`}>
       <div className="flex mb-8 items-center">
         <div>
-          <h1 className="text-3xl font-bold mb-2">My Pantry</h1>
+          <h1
+            className={`${isDesktop ? "text-3xl" : "text-2xl"} font-bold mb-2`}
+          >
+            My Pantry
+          </h1>
           <p className="text-slate-600">Manage your ingredients</p>
         </div>
         <GradientWrapper
-          className="flex flex-row gap-2 ml-auto px-6 py-3 rounded-xl truncate transition hover:opacity-90 hover:scale-99 text-slate-100"
+          className={`${isDesktop ? "px-6 py-3" : "px-4 py-2"} flex flex-row gap-2 ml-auto rounded-xl truncate transition hover:opacity-90 hover:scale-99 text-slate-100`}
           onClick={() => setAddingItem(!addingItem)}
         >
           <Plus></Plus>
@@ -180,6 +188,7 @@ export default function Pantry() {
         <div className="grid gap-3 grid-cols-1 lg:grid-cols-2">
           {pantry?.map((item) => (
             <PantryItem
+              isDesktop={isDesktop}
               key={item.id}
               item={item}
               onDelete={() => handleDeleteItem(item.id)}

@@ -7,9 +7,24 @@ import { Menu } from "lucide-react";
 import { LogOut } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "./provider/auth/AuthContext";
+import { useMediaQuery } from "./hooks/useMediaQuery";
 
 export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [userTouchedSidebar, setUserTouchedSidebar] = useState(false);
+  const isDesktop = useMediaQuery("(min-width: 768px)");
+
+  console.log("is it a desktop", isDesktop);
+
+  if (!isDesktop && sidebarOpen) {
+    setSidebarOpen(false);
+    setUserTouchedSidebar(false);
+  }
+
+  if (isDesktop && !sidebarOpen && !userTouchedSidebar) {
+    setSidebarOpen(true);
+    setUserTouchedSidebar(false);
+  }
 
   const { logout } = useAuth();
   return (
@@ -27,7 +42,12 @@ export default function App() {
             )}
             <div
               className="hover:bg-slate-200 rounded-md p-2"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
+              onClick={() => {
+                if (isDesktop) {
+                  setSidebarOpen(!sidebarOpen);
+                  setUserTouchedSidebar(true);
+                }
+              }}
             >
               <Menu></Menu>
             </div>
@@ -66,8 +86,8 @@ export default function App() {
           </div>
         </aside>
 
-        <main className="w-full overflow-scroll">
-          <Outlet></Outlet>
+        <main className={`${isDesktop ? "p-8" : "p-6"} w-full overflow-scroll`}>
+          <Outlet context={isDesktop}></Outlet>
         </main>
       </div>
     </div>
