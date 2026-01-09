@@ -1,7 +1,9 @@
 import { useAuth } from "../auth/AuthContext";
 import { PantryContext } from "./PantryContext";
+import { useState } from "react";
 
 export function PantryProvider({ children }) {
+  const [pantry, setPantry] = useState(null);
   const { authFetch } = useAuth();
 
   async function getAllItems() {
@@ -11,11 +13,13 @@ export function PantryProvider({ children }) {
   }
 
   async function addItem(name, quantity, unit) {
+    const itemName = name.charAt(0).toUpperCase() + name.slice(1);
+
     const res = await authFetch("/api/pantry", {
       method: "POST",
       // headers: { "Content-Type": "application/json" },
       body: {
-        name,
+        name: itemName,
         quantity: Number(quantity), // backend will Number(...) it
         unit,
       },
@@ -46,6 +50,8 @@ export function PantryProvider({ children }) {
     getAllItems,
     addItem,
     deleteItem,
+    pantry,
+    setPantry,
   };
 
   return (

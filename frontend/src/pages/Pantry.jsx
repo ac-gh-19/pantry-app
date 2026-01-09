@@ -1,16 +1,16 @@
 import { useState, useEffect } from "react";
 import { usePantry } from "../provider/pantry/PantryContext";
 import { Plus } from "lucide-react";
-import GradientWrapper from "../components/gradientWrapper";
-import PantryItemInput from "../components/Pantry/PantryItemInput";
-import PantryButton from "../components/Pantry/PantryButton";
-import PantryItem from "../components/Pantry/PantryItem";
-import ErrorBox from "../components/errorBox";
+import GradientWrapper from "../components/Global/gradientWrapper";
+import PantryItemInput from "../components/PantryPage/PantryItemInput";
+import PantryButton from "../components/PantryPage/PantryButton";
+import PantryItem from "../components/PantryPage/PantryItem";
+import ErrorBox from "../components/Global/errorBox";
+import PageTitle from "../components/Global/PageTitle";
 import { X } from "lucide-react";
 import { useMediaQuery } from "../hooks/useMediaQuery";
 
 export default function Pantry() {
-  const [pantry, setPantry] = useState(null);
   const [form, setForm] = useState({
     name: "",
     quantity: "",
@@ -21,9 +21,9 @@ export default function Pantry() {
   const [loading, setLoading] = useState(false);
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
-  console.log(isDesktop);
+  console.log("rerendering");
 
-  const { getAllItems, addItem, deleteItem } = usePantry();
+  const { getAllItems, addItem, deleteItem, pantry, setPantry } = usePantry();
 
   const isFormFilled = form.name && form.quantity && form.unit;
   const initialForm = {
@@ -41,7 +41,7 @@ export default function Pantry() {
     }
 
     getPantry();
-  }, [getAllItems]);
+  }, []);
 
   async function handleAddItem(e) {
     e.preventDefault();
@@ -62,7 +62,6 @@ export default function Pantry() {
 
       form.reset();
       setForm(initialForm);
-      setAddingItem(false);
     } catch (err) {
       setAddItemError(err.message || "Failed to add item");
     }
@@ -82,14 +81,11 @@ export default function Pantry() {
   return (
     <div className={`h-screen`}>
       <div className="flex mb-8 items-center">
-        <div>
-          <h1
-            className={`${isDesktop ? "text-3xl" : "text-2xl"} font-bold mb-2`}
-          >
-            My Pantry
-          </h1>
-          <p className="text-slate-600">Manage your ingredients</p>
-        </div>
+        <PageTitle
+          className={`${isDesktop ? "text-3xl" : "text-2xl"}`}
+          title={"My Pantry"}
+          description={"Manage your ingredients"}
+        ></PageTitle>
         <GradientWrapper
           className={`${isDesktop ? "px-6 py-3" : "px-4 py-2"} flex flex-row gap-2 ml-auto rounded-xl truncate transition hover:opacity-90 hover:scale-99 text-slate-100`}
           onClick={() => setAddingItem(!addingItem)}
