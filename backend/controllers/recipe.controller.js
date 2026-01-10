@@ -96,8 +96,7 @@ exports.addRecipe = async (req, res) => {
 
     if (
       recipe.cooking_time === undefined ||
-      typeof recipe.cooking_time !== "number" ||
-      recipe.cooking_time <= 0
+      typeof recipe.cooking_time !== "string"
     ) {
       return fail(res, ERROR.VALIDATION_ERROR, "Invalid cooking_time", 400, {
         field: "cooking_time",

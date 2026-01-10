@@ -9,7 +9,7 @@ import { usePantry } from "../provider/pantry/PantryContext";
 import GenPageIngredient from "../components/GeneratorPage/GenPageIngredient";
 import { Plus } from "lucide-react";
 import { X } from "lucide-react";
-import ErrorBox from "../components/Global/errorBox";
+import ResultBox from "../components/Global/ResultBox";
 import { useAuth } from "../provider/auth/AuthContext";
 import { Wand2 } from "lucide-react";
 import GenPageSection from "../components/GeneratorPage/GenPageSection";
@@ -23,7 +23,7 @@ const RECIPE_CHIP_STYLES = {
   easy: "bg-green-100 text-green-600",
   medium: "bg-yellow-100 text-yellow-600",
   hard: "bg-red-100 text-red-600",
-  default: "bg-slate-100 text-slate-500",
+  default: "bg-slate-100 text-slate-500 text-sm",
 };
 
 const RECIPE_SECTION_HEADER_STYLES = {
@@ -34,7 +34,11 @@ const RECIPE_SECTION_HEADER_STYLES = {
 export default function Generator() {
   const [mode, setMode] = useState("random");
   const [selectedItems, setSelectedItems] = useState([]);
-  const [genError, setGenError] = useState(null);
+  const [genResult, setGenResult] = useState({
+    error: false,
+    message: "",
+    result: false,
+  });
   const [recipes, setRecipes] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -69,14 +73,55 @@ export default function Generator() {
       const recipes = res.data.map((recipe) => ({
         ...recipe,
         viewInstructions: true,
-        id: crypto.randomUUID?.() ?? `${Date.now()}-${Math.random()}`,
       }));
 
       setRecipes(recipes);
+      setGenResult({
+        error: false,
+        message: "Recipes generated!",
+        result: true,
+      });
     } catch (err) {
-      setGenError(err.message || "Failed to generate recipes");
+      setGenResult({
+        error: true,
+        message: err.message || "Failed to generate recipes",
+        result: true,
+      });
     }
     setLoading(false);
+  }
+
+  async function handleSaveRecipe(recipe) {
+    try {
+      const res = await authFetch("/api/recipes", {
+        method: "POST",
+        body: {
+          title: recipe.title,
+          ingredients_used: recipe.ingredients_used,
+          instructions: recipe.instructions,
+          cooking_time: recipe.cooking_time,
+          difficulty: recipe.difficulty,
+          optional_additions: recipe.optional_additions,
+        },
+      });
+
+      if (!res.ok) {
+        const message = res.error?.message || "Failed to save recipe";
+        throw new Error(message);
+      }
+
+      setGenResult({
+        error: false,
+        message: "Recipe saved successfully!",
+        result: true,
+      });
+    } catch {
+      setGenResult({
+        error: true,
+        message: "Failed to save recipe",
+        result: true,
+      });
+    }
   }
 
   const isDesktop = useMediaQuery("(min-width: 768px)");
@@ -96,7 +141,6 @@ export default function Generator() {
             mode={mode === "random"}
             onClick={() => {
               setMode("random");
-              setGenError(null);
             }}
           >
             Use All Items
@@ -106,7 +150,6 @@ export default function Generator() {
             mode={mode === "select"}
             onClick={() => {
               setMode("select");
-              setGenError(null);
             }}
           >
             Select From Pantry
@@ -114,7 +157,17 @@ export default function Generator() {
         </div>
 
         <div className="flex flex-col">
-          <h3 className=" font-semibold mb-2">Available Ingredients</h3>
+          <div></div>
+          <h3 className=" font-semibold mb-2">
+            Available Ingredients
+            <div>
+              {pantry.length == 0 && (
+                <span className="text-sm font-normal text-slate-500">
+                  Add items to your pantry
+                </span>
+              )}
+            </div>
+          </h3>
           <div className="flex gap-5 flex-wrap mb-5">
             {mode == "select"
               ? availablePantry.map((item) => (
@@ -143,7 +196,17 @@ export default function Generator() {
           </div>
           {mode == "select" && (
             <div className="mb-8">
-              <h3 className=" font-semibold mb-2">Selected Ingredients</h3>
+              <h3 className=" font-semibold mb-2">
+                Selected Ingredients
+                <div>
+                  {selectedItems.length == 0 && (
+                    <span className="text-sm font-normal text-slate-500">
+                      Select items to generate recipes
+                    </span>
+                  )}
+                </div>
+              </h3>
+
               <div className="flex gap-5 flex-wrap">
                 {selectedItems.map((item) => (
                   <GenPageIngredient
@@ -167,13 +230,20 @@ export default function Generator() {
             mode === "random"
               ? handleGenerateRecipes(pantry.map((item) => item.id))
               : handleGenerateRecipes(selectedItems.map((item) => item.id));
-            setGenError(null);
           }}
         >
           <Wand2></Wand2>
           <div>{loading ? "Loading..." : "Generate"}</div>
         </button>
-        {genError && <ErrorBox className="mt-4">{genError}</ErrorBox>}
+        {genResult.result == true && (
+          <ResultBox fail={genResult.error} className="mt-4 flex items-center">
+            {genResult.message}
+            <X
+              className="w-5 items-center ml-auto"
+              onClick={() => setGenResult(false)}
+            ></X>
+          </ResultBox>
+        )}
       </GenPageSection>
 
       {recipes && (
@@ -181,18 +251,18 @@ export default function Generator() {
           <h3 className={`text-xl mb-3 font-bold`}>Generated Recipes</h3>
 
           {recipes.map((recipe) => (
-            <GenPageSection key={recipe.id} className="mb-5">
+            <GenPageSection key={recipe.title} className="mb-5">
               <div className="flex items-center ">
                 <h4 className={`${RECIPE_SECTION_HEADER_STYLES.lg}`}>
                   {recipe.title}
                 </h4>{" "}
                 <GradientWrapper className="ml-auto rounded-xl px-4 py-1 text-gray-100 transition hover:scale-97">
-                  <Plus></Plus>
+                  <Plus onClick={() => handleSaveRecipe(recipe)}></Plus>
                 </GradientWrapper>
               </div>
               <div className="flex items-center mb-3 text-slate-500 text-sm">
                 <Clock4 className="inline w-5 mr-2"></Clock4>
-                {recipe.cooking_time}
+                {recipe.cooking_time} min
                 <RecipeChip
                   className={`mx-3 text-xs ${RECIPE_CHIP_STYLES[recipe.difficulty] || RECIPE_CHIP_STYLES.default}`}
                 >
@@ -249,17 +319,17 @@ export default function Generator() {
                     ? "Hide Instructions"
                     : "View Instructions"}
                   {recipe.viewInstructions == true ? (
-                    <ToggleRight stroke="green"></ToggleRight>
+                    <ToggleRight stroke="green" className="ml-1"></ToggleRight>
                   ) : (
-                    <ToggleLeft stroke="gray"></ToggleLeft>
+                    <ToggleLeft stroke="gray" className="ml-1"></ToggleLeft>
                   )}
                 </h5>
                 {recipe.viewInstructions == true && (
-                  <ol className="list-decimal list-inside">
+                  <ul className="text-sm text-slate-700">
                     {recipe.instructions.map((step, index) => (
-                      <li key={index}>{step}</li>
+                      <li key={index}>- {step}</li>
                     ))}
-                  </ol>
+                  </ul>
                 )}
               </GenPageSubsection>
             </GenPageSection>

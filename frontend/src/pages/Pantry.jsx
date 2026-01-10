@@ -5,7 +5,7 @@ import GradientWrapper from "../components/Global/gradientWrapper";
 import PantryItemInput from "../components/PantryPage/PantryItemInput";
 import PantryButton from "../components/PantryPage/PantryButton";
 import PantryItem from "../components/PantryPage/PantryItem";
-import ErrorBox from "../components/Global/errorBox";
+import ResultBox from "../components/Global/ResultBox";
 import PageTitle from "../components/Global/PageTitle";
 import { X } from "lucide-react";
 import { useMediaQuery } from "../hooks/useMediaQuery";
@@ -16,7 +16,7 @@ export default function Pantry() {
     quantity: "",
     unit: "pcs",
   });
-  const [addingItem, setAddingItem] = useState(false);
+  const [addingItem, setAddingItem] = useState(true);
   const [addItemError, setAddItemError] = useState(null);
   const [loading, setLoading] = useState(false);
   const isDesktop = useMediaQuery("(min-width: 768px)");
@@ -174,7 +174,9 @@ export default function Pantry() {
                 </PantryButton>
               </GradientWrapper>
             </div>
-            {addingItem && addItemError && <ErrorBox>{addItemError}</ErrorBox>}
+            {addingItem && addItemError && (
+              <ResultBox fail={true}>{addItemError}</ResultBox>
+            )}
           </div>
         )}
         <div className="grid gap-3 grid-cols-1 lg:grid-cols-2">
