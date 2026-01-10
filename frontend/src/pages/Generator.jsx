@@ -2,7 +2,6 @@ import PageTitle from "../components/Global/PageTitle";
 import { useMediaQuery } from "../hooks/useMediaQuery";
 import { Sparkles } from "lucide-react";
 import GenPageButton from "../components/GeneratorPage/GenPageButton";
-import GradientWrapper from "../components/Global/gradientWrapper";
 import { Funnel } from "lucide-react";
 import { useState } from "react";
 import { usePantry } from "../provider/pantry/PantryContext";
@@ -12,24 +11,9 @@ import { X } from "lucide-react";
 import ResultBox from "../components/Global/ResultBox";
 import { useAuth } from "../provider/auth/AuthContext";
 import { Wand2 } from "lucide-react";
-import GenPageSection from "../components/GeneratorPage/GenPageSection";
-import { Clock4 } from "lucide-react";
-import RecipeChip from "../components/GeneratorPage/RecipeChip";
-import GenPageSubsection from "../components/GeneratorPage/GenPageSubsection";
-import { ToggleLeft } from "lucide-react";
-import { ToggleRight } from "lucide-react";
-
-const RECIPE_CHIP_STYLES = {
-  easy: "bg-green-100 text-green-600",
-  medium: "bg-yellow-100 text-yellow-600",
-  hard: "bg-red-100 text-red-600",
-  default: "bg-slate-100 text-slate-500 text-sm",
-};
-
-const RECIPE_SECTION_HEADER_STYLES = {
-  md: "text-md font-semibold mb-2 text-slate-700",
-  lg: "text-xl font-bold mb-2",
-};
+import PageSection from "../components/Global/PageSection";
+import RecipeCard from "../components/Global/RecipeCard";
+import { useGenerator } from "../provider/generator/GeneratorContext";
 
 export default function Generator() {
   const [mode, setMode] = useState("random");
@@ -39,11 +23,11 @@ export default function Generator() {
     message: "",
     result: false,
   });
-  const [recipes, setRecipes] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const { pantry } = usePantry();
   const { authFetch } = useAuth();
+  const { recipes, setRecipes } = useGenerator();
 
   const availablePantry = pantry.filter(
     (item) => !selectedItems.some((selected) => selected.id === item.id),
@@ -51,6 +35,7 @@ export default function Generator() {
 
   async function handleGenerateRecipes(ids) {
     setLoading(true);
+    setGenResult({ error: false, message: "", result: false });
     try {
       const res =
         mode === "select"
@@ -92,6 +77,7 @@ export default function Generator() {
   }
 
   async function handleSaveRecipe(recipe) {
+    setLoading(true);
     try {
       const res = await authFetch("/api/recipes", {
         method: "POST",
@@ -110,31 +96,30 @@ export default function Generator() {
         throw new Error(message);
       }
 
-      setGenResult({
-        error: false,
-        message: "Recipe saved successfully!",
-        result: true,
-      });
+      alert(`${recipe.title} saved successfully`);
     } catch {
       setGenResult({
         error: true,
         message: "Failed to save recipe",
         result: true,
       });
+    } finally {
+      setLoading(false);
+      setTimeout(() => {
+        setGenResult({ error: false, message: "", result: false });
+      }, 3000);
     }
   }
 
   const isDesktop = useMediaQuery("(min-width: 768px)");
   return (
     <div>
-      <div className="mb-8">
-        <PageTitle
-          title="Generate Recipes"
-          description="Create recipes from what you already have"
-          className={`${isDesktop ? "text-3xl" : "text-2xl"}`}
-        ></PageTitle>
-      </div>
-      <GenPageSection>
+      <PageTitle
+        title="Generate Recipes"
+        description="Create recipes from what you already have"
+        className={`${isDesktop ? "text-3xl" : "text-2xl"}`}
+      ></PageTitle>
+      <PageSection>
         <div className="flex w-full rounded-xl mb-5 gap-5 p-1 bg-slate-200">
           <GenPageButton
             Icon={Sparkles}
@@ -161,7 +146,7 @@ export default function Generator() {
           <h3 className=" font-semibold mb-2">
             Available Ingredients
             <div>
-              {pantry.length == 0 && (
+              {(pantry.length == 0 || availablePantry.length == 0) && (
                 <span className="text-sm font-normal text-slate-500">
                   Add items to your pantry
                 </span>
@@ -244,95 +229,21 @@ export default function Generator() {
             ></X>
           </ResultBox>
         )}
-      </GenPageSection>
+      </PageSection>
 
       {recipes && (
         <>
           <h3 className={`text-xl mb-3 font-bold`}>Generated Recipes</h3>
 
           {recipes.map((recipe) => (
-            <GenPageSection key={recipe.title} className="mb-5">
-              <div className="flex items-center ">
-                <h4 className={`${RECIPE_SECTION_HEADER_STYLES.lg}`}>
-                  {recipe.title}
-                </h4>{" "}
-                <GradientWrapper className="ml-auto rounded-xl px-4 py-1 text-gray-100 transition hover:scale-97">
-                  <Plus onClick={() => handleSaveRecipe(recipe)}></Plus>
-                </GradientWrapper>
-              </div>
-              <div className="flex items-center mb-3 text-slate-500 text-sm">
-                <Clock4 className="inline w-5 mr-2"></Clock4>
-                {recipe.cooking_time} min
-                <RecipeChip
-                  className={`mx-3 text-xs ${RECIPE_CHIP_STYLES[recipe.difficulty] || RECIPE_CHIP_STYLES.default}`}
-                >
-                  {recipe.difficulty}
-                </RecipeChip>
-              </div>
-              <GenPageSubsection>
-                <h5 className={`${RECIPE_SECTION_HEADER_STYLES.md}`}>
-                  Ingredients Used
-                </h5>
-                <ul className="flex gap-3">
-                  {recipe.ingredients_used.map((ingredient, index) => (
-                    <RecipeChip
-                      key={index}
-                      className={RECIPE_CHIP_STYLES.default}
-                    >
-                      {ingredient}
-                    </RecipeChip>
-                  ))}
-                </ul>
-              </GenPageSubsection>
-              {recipe.optional_additions &&
-                recipe.optional_additions.length > 0 && (
-                  <GenPageSubsection>
-                    <h5 className={`${RECIPE_SECTION_HEADER_STYLES.md}`}>
-                      Optional Additions
-                    </h5>
-                    <ul className="flex gap-3">
-                      {recipe.optional_additions.map((addition, index) => (
-                        <RecipeChip
-                          key={index}
-                          className={RECIPE_CHIP_STYLES.default}
-                        >
-                          {addition}
-                        </RecipeChip>
-                      ))}
-                    </ul>
-                  </GenPageSubsection>
-                )}
-              <GenPageSubsection>
-                <h5
-                  className={`${RECIPE_SECTION_HEADER_STYLES.md} w-max flex gap-2`}
-                  onClick={() => {
-                    setRecipes((prev) =>
-                      prev.map((r) =>
-                        r.id === recipe.id
-                          ? { ...r, viewInstructions: !r.viewInstructions }
-                          : r,
-                      ),
-                    );
-                  }}
-                >
-                  {recipe.viewInstructions == true
-                    ? "Hide Instructions"
-                    : "View Instructions"}
-                  {recipe.viewInstructions == true ? (
-                    <ToggleRight stroke="green" className="ml-1"></ToggleRight>
-                  ) : (
-                    <ToggleLeft stroke="gray" className="ml-1"></ToggleLeft>
-                  )}
-                </h5>
-                {recipe.viewInstructions == true && (
-                  <ul className="text-sm text-slate-700">
-                    {recipe.instructions.map((step, index) => (
-                      <li key={index}>- {step}</li>
-                    ))}
-                  </ul>
-                )}
-              </GenPageSubsection>
-            </GenPageSection>
+            <RecipeCard
+              key={recipe.title}
+              recipe={recipe}
+              TopRightIcon={Plus}
+              handleTopRightClick={() => handleSaveRecipe(recipe)}
+              setRecipes={setRecipes}
+              loading={loading}
+            ></RecipeCard>
           ))}
         </>
       )}

@@ -43,7 +43,7 @@ exports.getAllRecipes = async (req, res) => {
       [userId],
     );
 
-    return ok(res, result.rows[0], 200);
+    return ok(res, result.rows, 200);
   } catch (error) {
     console.error("Get all recipes fail: ", error);
     return fail(res, ERROR.INTERNAL_ERROR, "Internal server error", 500);

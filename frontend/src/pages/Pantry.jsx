@@ -9,6 +9,7 @@ import ResultBox from "../components/Global/ResultBox";
 import PageTitle from "../components/Global/PageTitle";
 import { X } from "lucide-react";
 import { useMediaQuery } from "../hooks/useMediaQuery";
+import PageSection from "../components/Global/PageSection";
 
 export default function Pantry() {
   const [form, setForm] = useState({
@@ -76,7 +77,7 @@ export default function Pantry() {
 
   return (
     <div className={`h-screen`}>
-      <div className="flex mb-8 items-center">
+      <div className="flex items-center">
         <PageTitle
           className={`${isDesktop ? "text-3xl" : "text-2xl"}`}
           title={"My Pantry"}
@@ -93,7 +94,7 @@ export default function Pantry() {
 
       <div className="flex flex-col">
         {addingItem && (
-          <div className="p-5 flex flex-col bg-white rounded-xl shadow-md mb-5">
+          <PageSection>
             <div className="mb-3 text-lg font-semibold flex items-center">
               <div>Add New Item</div>
               <X
@@ -169,6 +170,7 @@ export default function Pantry() {
                   form="addItem"
                   type="submit"
                   disabled={!isFormFilled && loading}
+                  className="w-full"
                 >
                   Add to Pantry
                 </PantryButton>
@@ -177,7 +179,7 @@ export default function Pantry() {
             {addingItem && addItemError && (
               <ResultBox fail={true}>{addItemError}</ResultBox>
             )}
-          </div>
+          </PageSection>
         )}
         <div className="grid gap-3 grid-cols-1 lg:grid-cols-2">
           {pantry?.map((item) => (
