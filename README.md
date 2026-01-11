@@ -1,5 +1,7 @@
 # PantryChef
 
+**Live Demo:** https://pantry-app-ten-omega.vercel.app
+
 PantryChef is a full-stack web app that lets users manage a personal pantry and generate AI-powered recipes using the ingredients they already have. Users can generate recipes from their full pantry or a selected subset, then save and manage those recipes in their profile.
 
 
@@ -45,6 +47,15 @@ PantryChef is a full-stack web app that lets users manage a personal pantry and 
 - **JWT** (`jsonwebtoken`) for authentication
 - **bcrypt** for password hashing
 - **Anthropic SDK** (`@anthropic-ai/sdk`) for AI integration
+---
+## Screenshots
+<img width="1462" height="754" alt="Screenshot 2026-01-10 at 7 42 08 PM" src="https://github.com/user-attachments/assets/076dd1c8-6b2c-463b-b56c-5ca3b9dc3b11" />
+<br></br>
+<img width="1461" height="755" alt="Screenshot 2026-01-10 at 7 44 23 PM" src="https://github.com/user-attachments/assets/b91e8ae8-cd00-4a7a-93a9-e40dadbfdc44" />
+<br></br>
+<img width="1465" height="751" alt="Screenshot 2026-01-10 at 7 43 21 PM" src="https://github.com/user-attachments/assets/d20a0915-02c2-4ad5-b4b4-6fcb833dde38" />
+<br></br>
+
 ---
 ## Architecture
 
